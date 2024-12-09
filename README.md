@@ -1,71 +1,63 @@
-# Arquitectura de Procesamiento de Datos con Azure
+# Arquitectura: Flujo de Datos con Azure Functions, Cosmos DB, Data Factory, Data Lake y Power BI
 
 ## Descripción General
-![alt text]({A53821C7-C638-4771-9023-9DB87BCBF1FC}.png)
-Este proyecto implementa una arquitectura de procesamiento de datos en tiempo real utilizando diversos servicios de Azure para almacenar, procesar y visualizar datos. La arquitectura ha sido actualizada con servicios nativos de Azure para reducir los costos y simplificar la implementación, manteniendo las mismas funcionalidades principales.
-
-La arquitectura está diseñada para capturar y almacenar datos a través de Azure Function, procesarlos con Azure Synapse Analytics y almacenarlos en Azure Data Lake Storage Gen 2, mientras que Azure Cosmos DB se utiliza para almacenamiento adicional. Los resultados se visualizan en Power BI para obtener información procesable.
-
-## Componentes de la Arquitectura
+![alt text](weather_arch.drawio.png)
+Esta arquitectura ilustra un flujo de procesamiento y visualización de datos utilizando los servicios de Azure. A continuación, se describe cada componente y su rol en el flujo:
 
 ### 1. **Azure Function**
-Azure Function se utiliza como un punto de entrada para el procesamiento de datos. Esta función recibe los datos en tiempo real desde una fuente externa (como una API de clima) y realiza transformaciones o preprocesamiento antes de almacenarlos en la base de datos.
+- **Función:** Procesa eventos o datos en tiempo real provenientes de diversas fuentes.
+- **Rol en la arquitectura:**
+  - Extrae datos de una fuente (por ejemplo, sensores o una API externa).
+  - Inserta los datos procesados directamente en **Azure Cosmos DB**.
 
 ### 2. **Azure Cosmos DB**
-Los datos preprocesados se almacenan en Azure Cosmos DB, una base de datos NoSQL distribuida, que proporciona alta disponibilidad y escalabilidad. Azure Cosmos DB se usa para mantener los datos accesibles rápidamente para futuras consultas o procesos adicionales.
+- **Función:** Es una base de datos NoSQL distribuida globalmente.
+- **Rol en la arquitectura:**
+  - Almacena los datos procesados por la Azure Function.
+  - Actúa como fuente de datos para **Azure Data Factory**.
 
-### 3. **Azure Synapse Analytics**
-Azure Synapse Analytics se utiliza para ejecutar consultas analíticas complejas sobre los datos almacenados. En esta arquitectura, Synapse accede a los datos almacenados en Azure Data Lake Storage Gen 2 y proporciona una capa analítica escalable y poderosa.
+### 3. **Azure Data Factory (ADF)**
+- **Función:** Orquesta y transforma los datos.
+- **Rol en la arquitectura:**
+  - Extrae datos de **Cosmos DB**.
+  - Realiza transformaciones necesarias (por ejemplo, limpieza o agregación de datos).
+  - Carga los datos transformados en **Azure Data Lake Storage Gen2**.
 
-### 4. **Azure Data Lake Storage Gen 2**
-Azure Data Lake Storage Gen 2 es el repositorio principal de almacenamiento de datos en bruto y procesados. Este almacén de datos está diseñado para permitir el análisis de grandes volúmenes de datos, y se integra con Azure Synapse Analytics para realizar consultas eficientes.
+### 4. **Azure Data Lake Storage Gen2**
+- **Función:** Almacén de datos escalable para grandes volúmenes de información.
+- **Rol en la arquitectura:**
+  - Actúa como repositorio central para almacenar los datos procesados.
+  - Sirve como fuente de datos para **Power BI**.
 
 ### 5. **Power BI**
-Power BI se utiliza para la visualización de los datos procesados. Los resultados de las consultas de Azure Synapse Analytics se transmiten a Power BI, lo que permite a los usuarios finales generar paneles de control e informes interactivos.
+- **Función:** Herramienta de análisis y visualización de datos.
+- **Rol en la arquitectura:**
+  - Conecta con **Azure Data Lake Storage Gen2** para acceder a los datos procesados.
+  - Genera informes y dashboards en tiempo real para la toma de decisiones.
 
-### 6. **Virtual Network y Subred Pública**
-Todos los recursos principales están implementados dentro de una Virtual Network de Azure para asegurar la comunicación privada entre los servicios. Azure Synapse y Azure Data Lake Storage Gen 2 se encuentran en la misma subred pública, facilitando un acceso seguro y eficiente.
-
-### 7. **Service Endpoint**
-Un service endpoint se ha configurado entre Azure Data Lake Storage Gen 2 y Azure Cosmos DB para garantizar una comunicación segura entre estos servicios, protegiendo los datos contra accesos no autorizados y mejorando el rendimiento de las operaciones.
+### 6. **Azure Subscription**
+- **Función:** Gestiona todos los servicios de Azure utilizados.
+- **Rol en la arquitectura:** Proporciona la infraestructura y configuración necesaria para ejecutar la solución.
 
 ## Flujo de Datos
-1. **Ingesta**: Los datos son recogidos por **Azure Function**, que los procesa y los guarda en **Azure Cosmos DB**.
-2. **Almacenamiento**: Los datos se transfieren desde **Azure Cosmos DB** a **Azure Data Lake Storage Gen 2** para almacenamiento a largo plazo y análisis.
-3. **Análisis**: **Azure Synapse Analytics** realiza consultas y análisis sobre los datos almacenados.
-4. **Visualización**: Los resultados se visualizan en **Power BI** para ofrecer una vista integral de los datos y permitir la toma de decisiones.
+1. Los datos se generan en una fuente externa (API del tiempo)
+2. **Azure Function** captura los datos y los inserta en **Azure Cosmos DB**.
+3. **Azure Data Factory** orquesta el flujo de datos, extrayéndolos desde **Cosmos DB**, realizando las transformaciones necesarias y almacenándolos en **Data Lake Storage Gen2**.
+4. **Power BI** se conecta a **Data Lake Storage Gen2** para visualizar y analizar los datos en dashboards interactivos.
 
-## Justificación de Cambios
-Tras un análisis del presupuesto proporcionado por el Chief Data Officer, se decidió modificar la arquitectura para evitar el uso de servicios costosos como Azure Databricks y Hive Metastore. En su lugar, se han utilizado servicios nativos de Azure que ofrecen funcionalidades similares con un costo más bajo y una integración más sencilla.
 
-- **Azure Synapse Analytics** reemplaza a **Databricks** para el procesamiento de datos y análisis. Synapse proporciona una solución integrada que es altamente compatible con otros servicios de Azure, lo que reduce la complejidad de la configuración y los costos asociados.
-- **Azure Data Lake Storage Gen 2** sigue siendo el almacén principal de datos, asegurando una solución escalable y económica para almacenar grandes volúmenes de datos en bruto y procesados.
-- **Power BI** continúa siendo la herramienta de visualización, permitiendo generar informes y paneles interactivos de una manera sencilla y visualmente atractiva.
+## Beneficios de esta Arquitectura
+- **Escalabilidad:** Cada componente puede escalar de manera independiente según la demanda.
+- **Integración sencilla:** Los servicios de Azure están diseñados para trabajar en conjunto de manera eficiente.
+- **Tiempo real:** Permite manejar datos en tiempo real desde su generación hasta su visualización.
+- **Flexibilidad:** Se puede ajustar para diferentes casos de uso y volúmenes de datos.
 
-Estas modificaciones no solo disminuyen los costos generales de la arquitectura, sino que también simplifican la administración y el despliegue, lo cual es esencial para asegurar la viabilidad del proyecto en el largo plazo.
+## Configuración Inicial
+1. Configurar una **Azure Function** para capturar datos.
+2. Crear una base de datos en **Cosmos DB**.
+3. Configurar un pipeline en **Azure Data Factory** para extraer, transformar y cargar (ETL) los datos.
+4. Crear un contenedor en **Data Lake Storage Gen2** para almacenar los datos procesados.
+5. Configurar una conexión desde **Power BI** a **Data Lake Storage Gen2** para consumir los datos y generar visualizaciones.
 
-## Objetivos
-- Proporcionar una solución escalable y segura para el procesamiento de datos en tiempo real.
-- Permitir consultas analíticas sobre datos almacenados en el lago de datos.
-- Facilitar la visualización de datos en tiempo real para obtener insights accionables.
-
-## Requisitos
-- **Cuenta de Azure** con permisos para desplegar recursos como Azure Function, Azure Synapse Analytics, Azure Cosmos DB, Azure Data Lake Storage y Power BI.
-- **Herramientas de desarrollo** como Visual Studio Code o Azure Portal para la gestión y configuración de los recursos.
-
-## Configuración e Implementación
-1. **Azure Function**: Crear una función que se encargue de recibir los datos y almacenarlos en Cosmos DB.
-2. **Azure Cosmos DB**: Configurar la base de datos para recibir los datos desde la función.
-3. **Azure Synapse y Data Lake**: Configurar el acceso desde Synapse a los datos en Data Lake.
-4. **Power BI**: Crear visualizaciones conectadas a Azure Synapse para el análisis de los datos.
-
-## Seguridad
-- Se utiliza una **Virtual Network** para limitar el acceso a los recursos.
-- Los **Service Endpoints** aseguran la comunicación privada entre los servicios.
-
-## Contribución
-Sientete libre de contribuir a este proyecto abriendo issues o creando pull requests. Cualquier sugerencia para mejorar la eficiencia o agregar nuevas funcionalidades es bienvenida.
-
-## Licencia
-Este proyecto está bajo la licencia MIT. Consulte el archivo LICENSE para más detalles.
+Con esta arquitectura, es posible gestionar eficientemente un flujo completo de datos desde la ingesta hasta su análisis y visualización.
 

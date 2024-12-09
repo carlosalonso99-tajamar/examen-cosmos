@@ -53,7 +53,7 @@ def get_weather_data():
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 */20 * * * *", arg_name="myTimer", run_on_startup=False,
+@app.timer_trigger(schedule="*/1 * * * * *", arg_name="myTimer", run_on_startup=False,
                 use_monitor=False) 
 def timer_weather_trigger(myTimer: func.TimerRequest) -> None:
     if myTimer.past_due:
